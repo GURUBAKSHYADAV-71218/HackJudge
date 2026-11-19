@@ -1,0 +1,73 @@
+name: SonarCloud
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonarcloud:
+    name: SonarCloud analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          # Full history improves the relevancy of SonarCloud reporting
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check SonarCloud configuration
+        id: sonar_config
+        run: |
+          if grep -q "REPLACE_WITH_YOUR" sonar-project.properties; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::sonar-project.properties still contains placeholder values. SonarCloud scan skipped. Fill in sonar.organization and sonar.projectKey, then re-run."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: SonarCloud scan
+        if: steps.sonar_config.outputs.configured == 'true'
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+      - name: SonarCloud Quality Gate
+        if: steps.sonar_config.outputs.configured == 'true'
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Analyze failure with SenseTheLog
+        # Advisory only: never modifies source, never commits or pushes.
+        # Skipped silently when SENSETHELOG_API_KEY is not configured.
+        if: failure() && env.SENSETHELOG_API_KEY != ''
+        continue-on-error: true
+        uses: sensethelog/action@v1
+        with:
+          sensethelog-api-key: ${{ secrets.SENSETHELOG_API_KEY }}
+          comment-on-pr: true
+          # make-fix stays at its default 'false': no automatic code changes
