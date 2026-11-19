@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
+  database:
+    name: Supabase schema and RLS checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+
+      - name: Start disposable local Supabase
+        run: >-
+          supabase start --workdir tests/supabase-local
+          --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+          --ignore-health-check
+
+      - name: Install core schema and safeguards
+        run: |
+          set -euo pipefail
+          cat HACKJUDGE_CORE_SCHEMA.sql | docker exec -i supabase_db_hackjudge_ci psql -U postgres -d postgres -v ON_ERROR_STOP=1
+          cat supabase/migrations/202610110003_lock_scoring_and_validate_round_coverage.sql | docker exec -i supabase_db_hackjudge_ci psql -U postgres -d postgres -v ON_ERROR_STOP=1
+
+      - name: Verify RLS, scoring, round safeguards, and shortlists
+        run: |
+          set -euo pipefail
+          cat tests/sql/core-smoke.sql | docker exec -i supabase_db_hackjudge_ci psql -U postgres -d postgres -v ON_ERROR_STOP=1
+          cat tests/sql/migration-003.sql | docker exec -i supabase_db_hackjudge_ci psql -U postgres -d postgres -v ON_ERROR_STOP=1
+
+      - name: Stop disposable Supabase
+        if: always()
+        continue-on-error: true
+        run: supabase stop --workdir tests/supabase-local --no-backup
