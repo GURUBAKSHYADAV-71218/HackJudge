@@ -90,7 +90,8 @@ The core account flow does not require the `resolve-judge-token` Edge Function. 
 
 ## Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/YOUR_USERNAME/hackjudge/issues).
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com).
+
 
 ---
 
