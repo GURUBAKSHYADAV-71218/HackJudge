@@ -1,3 +1,4 @@
+
 name: CI
 
 on:
@@ -24,6 +25,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # TEMPORARY: Remove this step after SenseTheLog testing.
+      - name: Temporary SenseTheLog Failure Test
+        run: |
+          echo "Testing SenseTheLog failure analysis"
+          exit 1
 
       - name: Unit tests
         run: npm test
@@ -78,15 +85,14 @@ jobs:
       actions: read
       contents: read
       pull-requests: write
+    env:
+      SENSETHELOG_API_KEY: ${{ secrets.SENSETHELOG_API_KEY }}
     steps:
       - name: Analyze with SenseTheLog
-        # Advisory only: posts root cause analysis and suggested fixes.
-        # It never modifies source, commits, pushes, or merges.
-        # Skipped silently when SENSETHELOG_API_KEY is not configured.
         if: env.SENSETHELOG_API_KEY != ''
         continue-on-error: true
         uses: sensethelog/action@v1
         with:
+          make-fix: false
           sensethelog-api-key: ${{ secrets.SENSETHELOG_API_KEY }}
           comment-on-pr: true
-          # make-fix stays at its default 'false': no automatic code changes
