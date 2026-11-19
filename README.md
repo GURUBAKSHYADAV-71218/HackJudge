@@ -1,100 +1,208 @@
-﻿<div align="center">
-  <img src="./public/favicon.svg" alt="HackJudge Logo" width="120" height="120" />
-  <h1>HackJudge</h1>
-  <p><strong>The High-Performance Evaluation Engine for Hackathons & Pitch Competitions</strong></p>
-  <p>
-    <a href="https://hack-judge-v2.vercel.app/">Live Demo</a> ·
-    <a href="#features">Features</a> ·
-    <a href="#tech-stack">Tech Stack</a> ·
-    <a href="#getting-started">Getting Started</a>
-  </p>
-</div>
+# HackJudge
 
-<hr />
+### The High-Performance Evaluation Engine for Hackathons & Pitch Competitions
 
-HackJudge is a premium, high-contrast judging platform designed to replace the friction of spreadsheets with a seamless, digital evaluation experience. Whether you're running a high-stakes hackathon, a startup pitch competition, or an academic case study, HackJudge gives organisers total control and judges a frictionless scoring experience.
+**Evaluate Smarter. Judge Faster. Build Better Competitions.**
 
-## Features
+[Live Demo](https://hack-judge-final.vercel.app/) | [Docker Hub](https://hub.docker.com/repository/docker/mrsupreme/hackjudge) | [Report Issues](https://github.com/GURUBAKSHYADAV-71218/HackJudge/issues)
 
-- **Frictionless UI/UX**: Ultra-fast, dual-theme (Light/Dark) interface with smooth micro-animations.
-- **Judge Account Claiming**: Judges use verified Supabase Auth accounts matched to the email assigned by an organizer. Magic-link invites are currently paused.
-- **Dynamic Round Builder**: Create customized scoring criteria with weighted averages mapped to specific rounds.
-- **Intelligent Panel Management**: Assign specific tracks and teams to targeted judging panels.
-- **Scoring and Results**: Organizer dashboards calculate results from completed judge submissions.
-- **Database Access Controls**: Supabase Row Level Security policies restrict access by organizer and judge assignment.
-- **Bulk Data Handling**: Drag-and-drop CSV uploads to import hundreds of teams in seconds.
+---
 
-## Tech Stack
+## Overview
 
-- **Frontend**: React 19, Vite, CSS (Vanilla + CSS Variables for theming)
-- **State Management**: React Query (`@tanstack/react-query`)
-- **Backend & Auth**: Supabase (PostgreSQL and GoTrue Auth; judge invite Edge Function deferred)
-- **Icons**: Lucide React
-- **Deployment**: Optimized for Vercel
+**HackJudge** is a modern, high-performance judging and evaluation platform designed to streamline hackathons, startup pitch competitions, and academic evaluation events.
+
+Traditional competition judging often relies on spreadsheets, manual score calculations, and disconnected communication between organizers and judges.
+
+HackJudge replaces this fragmented workflow with a centralized digital evaluation system that enables organizers to manage competitions, assign judging panels, define scoring criteria, and calculate results efficiently.
+
+Built with a focus on performance, usability, and database-level security, HackJudge delivers a seamless experience for both organizers and judges.
+
+## Key Features
+
+| Feature | Description |
+|---|---|
+| Modern UI/UX | Premium interface with Light and Dark themes, smooth transitions, and responsive layouts. |
+| Secure Authentication | Google OAuth authentication powered by Supabase Auth. |
+| Judge Account Claiming | Judges securely claim assigned judging responsibilities using their verified email accounts. |
+| Dynamic Round Builder | Create custom evaluation rounds with configurable scoring criteria and weighted averages. |
+| Panel Management | Assign specific teams and competition tracks to designated judging panels. |
+| Automated Results | Organizer dashboards calculate results from completed judge submissions. |
+| Database Security | Supabase Row Level Security (RLS) policies enforce organizer and judge-specific access restrictions. |
+| Bulk CSV Import | Import large numbers of participating teams through CSV uploads. |
+
+## Technology Stack
+
+| Layer | Technologies |
+|---|---|
+| Frontend | React 19, Vite |
+| Styling | Vanilla CSS, CSS Variables |
+| State Management | TanStack React Query |
+| Backend & Database | Supabase, PostgreSQL |
+| Authentication | Supabase Auth, Google OAuth |
+| Security | PostgreSQL RLS Policies |
+| Icons | Lucide React |
+| Deployment | Vercel |
+| Containerization | Docker |
 
 ## Getting Started
 
+Follow these steps to run HackJudge locally.
+
 ### Prerequisites
 
-Ensure you have [Node.js](https://nodejs.org/) installed, and a [Supabase](https://supabase.com/) project set up.
+- Node.js and npm
+- A Supabase account and project
+- Google Cloud project with OAuth credentials
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/hackjudge.git
-cd hackjudge
+git clone https://github.com/GURUBAKSHYADAV-71218/HackJudge.git
+cd HackJudge
 ```
 
-### 2. Install dependencies
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Setup Environment Variables
+### 3. Configure Environment Variables
 
-From the repository root, copy the example environment file and fill in your Supabase project URL and public anon/publishable key:
+Create a `.env` file in the project root:
 
-```powershell
-Copy-Item .env.example .env
-```
-Inside `.env`:
 ```env
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-public-key
 ```
 
-### 4. Database Schema Setup
+Replace the placeholder values with your Supabase project credentials.
 
-For a new, empty Supabase project using the core email-account judge flow, run `HACKJUDGE_CORE_SCHEMA.sql` once in the Supabase SQL Editor. Do not run it against an existing project. Existing-project upgrades use the ordered migrations in `supabase/migrations/` and require a separate reviewed rehearsal. Follow [DEPLOYMENT_RUNBOOK.md](./DEPLOYMENT_RUNBOOK.md) for the deployment steps.
+**Security Note:** Never expose your Supabase service role key or other privileged secrets in frontend environment variables.
 
-Organizers and judges authenticate with Google. Configure the Google OAuth provider in Supabase and the matching Web OAuth client in Google Cloud. Organizers add judges by email; a judge must sign in with Google using that same email, and the app claims the assignment automatically. Judge magic-link invites are paused.
+### 4. Configure the Database
 
-### 5. Run the Development Server
+For a new, empty Supabase project using the core email-account judge flow:
+
+1. Open your Supabase Dashboard.
+2. Navigate to SQL Editor.
+3. Execute `HACKJUDGE_CORE_SCHEMA.sql` once.
+4. Configure the Google OAuth provider in Supabase.
+5. Configure the corresponding Web OAuth client in Google Cloud.
+
+**Important:** Do not execute the core schema against an existing database. Existing-project upgrades require a separately reviewed migration process.
+
+### 5. Start the Development Server
 
 ```bash
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`.
+Open the application:
+
+```text
+http://localhost:5173
+```
+
+## Authentication Workflow
+
+HackJudge uses Supabase Auth with Google OAuth.
+
+The current authentication workflow:
+
+1. Organizers sign in using their Google accounts.
+2. Organizers create competition events and assign judges using their email addresses.
+3. Judges sign in using Google with the same assigned email address.
+4. The platform automatically claims the corresponding judge assignment.
+5. Judges evaluate their assigned teams and submit scores.
+6. Organizers review submissions and access calculated results.
+
+**Note:** Judge magic-link invitations are currently paused. The platform uses verified Supabase Auth accounts for judge assignment claiming.
+
+## Docker
+
+HackJudge has a Docker repository available on Docker Hub.
+
+**Docker Repository:** [mrsupreme/hackjudge](https://hub.docker.com/repository/docker/mrsupreme/hackjudge)
+
+Visit Docker Hub for available image tags and container usage instructions.
 
 ## Deployment
 
-HackJudge is pre-configured for Vercel. 
-1. Push your code to GitHub.
-2. Import the repository in Vercel.
-3. Add the `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to the Vercel Environment Variables.
-4. Deploy! The included `vercel.json` will automatically handle SPA routing.
+HackJudge is configured for deployment on Vercel.
 
-The core account flow does not require the `resolve-judge-token` Edge Function. Judge invite links are paused while the platform uses regular, verified Supabase Auth accounts.
+1. Push your repository to GitHub.
+2. Import the repository into Vercel.
+3. Configure the following environment variables:
+
+```env
+VITE_SUPABASE_URL=your-supabase-project-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+4. Deploy the application.
+
+The included `vercel.json` handles Single Page Application (SPA) routing.
+
+**Live Application:** [https://hack-judge-final.vercel.app/](https://hack-judge-final.vercel.app/)
+
+## Security & Data Integrity
+
+Security is an important part of HackJudge's architecture.
+
+- Supabase Row Level Security (RLS) policies restrict database access.
+- Organizer and judge permissions are enforced through database policies.
+- Judge assignments are associated with verified email identities.
+- Database access is designed around competition ownership and judge assignments.
+- Privileged backend credentials must remain server-side.
+
+## Project Structure
+
+```text
+HackJudge/
+│
+├── .github/
+│   └── workflows/
+│
+├── public/
+│
+├── src/
+│
+├── supabase/
+│   └── migrations/
+│
+├── tests/
+│
+├── HACKJUDGE_CORE_SCHEMA.sql
+├── HackJudge_Project_Report.pdf
+├── REMEDIATION_LOG.md
+├── Dockerfile
+├── .dockerignore
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package.json
+├── vite.config.js
+├── vercel.json
+└── README.md
+```
 
 ## Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com).
+Contributions, bug reports, feature suggestions, and improvements are welcome.
 
+If you find an issue or have an idea to improve HackJudge:
+
+1. Open an issue describing the problem or suggestion.
+2. Fork the repository.
+3. Create a feature branch.
+4. Submit a pull request.
+
+Visit the [Issues](https://github.com/GURUBAKSHYADAV-71218/HackJudge/issues) page to report bugs or suggest improvements.
 
 ---
 
-<div align="center">
-  Built with precision. Designed for scale.
-</div>
+**Built with precision. Designed for scale.**
+
+Making competition evaluation smarter, faster, and more transparent.
