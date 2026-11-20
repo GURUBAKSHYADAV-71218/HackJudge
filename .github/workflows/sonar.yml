@@ -1,3 +1,4 @@
+
 name: SonarCloud
 
 on:
@@ -15,6 +16,15 @@ jobs:
   sonarcloud:
     name: SonarCloud analysis
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+
+    env:
+      SENSETHELOG_API_KEY: ${{ secrets.SENSETHELOG_API_KEY }}
+
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -62,7 +72,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Analyze failure with SenseTheLog
-        # Advisory only: never modifies source, never commits or pushes.
+        # Advisory only: never modifies source, commits, or pushes.
         # Skipped silently when SENSETHELOG_API_KEY is not configured.
         if: failure() && env.SENSETHELOG_API_KEY != ''
         continue-on-error: true
